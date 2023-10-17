@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Expense Tracker</h1>
+        <form id="expenseForm">
+            <div class="form-group">
+                <label for="amount">Expense Amount:</label>
+                <input type="number" class="form-control" id="amount" required>
+            </div>
+            <div class="form-group">
+                <label for="description">Description:</label>
+                <input type="text" class="form-control" id="description" required>
+            </div>
+            <div class="form-group">
+                <label for="category">Category:</label>
+                <select class="form-control" id="category">
+                    <option value="fuel">Fuel</option>
+                    <option value="grocery">Grocery</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Expense</button>
+        </form>
+        <div id="expenseList" class="mt-4">
+            <!-- Expense entries will be displayed here -->
+        </div>
+    </div>
+    <!-- Your HTML -->
+<!-- ... (no changes to HTML structure) -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.5.1/axios.min.js"></script>
+
+<script>
+
+  const expenseForm = document.getElementById("expenseForm");
+  const expenseList = document.getElementById("expenseList");
+  let flag=false;
+
+
+  
+expenseForm.addEventListener('submit',function(event){
+    event.preventDefault();
+
+  const amount = parseFloat(document.getElementById("amount").value);
+     const description = document.getElementById("description").value;
+     const category = document.getElementById("category").value;
+
+     const expenseEntry={
+        amount,description,category
+     }
+     axios.post('http://localhost:7000/add-expense',expenseEntry)
+     .then(res=>{
+        console.log(res);
+        fetchdata();
+        
+     })
+     .catch(err=>{
+        console.log(err);
+     })
+
+
+})
+function displayExpense(data){
+   
+    expenseList.innerHTML="";
+    data.forEach((data)=>{
+        const expenselist=document.createElement('div');
+         expenselist.innerHTML=`
+        <div class="card mb-2">
+            <div class="card-body">
+            <h4  class="card-title">${data.expensename}</h4>
+                <p>${data.expensetype}</p>
+                    <p>${data.amount}</p>
+                    <button class="btn btn-danger delete-button" id="${data.id}">Delete Expense</button>
+                    <button class="btn btn-danger edit-button" id="${data.id}" ">Edit Expense</button>
+                </div>
+
+            </div>`;
+           
+            const deleteButton = expenselist.querySelector(".delete-button");
+                deleteButton.addEventListener("click", function () {
+                    const id = this.getAttribute("id");
+                    console.log(id);
+                    deletedata(id);
+                    
+                });
+                const editButton = expenselist.querySelector(".edit-button");
+                editButton.addEventListener("click", function () {
+                    const id = this.getAttribute("id");
+                    
+                    
+                    
+                });
+                
+                    
+                
+            
+                expenseList.appendChild(expenselist);
+
+
+    })
+
+
+}
+
+function editexpense(){
+    axios.get(`http://localhost:7000/update/${id}`)
+    .then(res=>{
+        editexpense(res.data);
+    })
+    .catch(err=>{
+        console.log(err);
+    })
+}
+
+function fetchdata(){
+    axios.get('http://localhost:7000/expenses')
+    .then(res=>{
+        displayExpense(res.data);
+    })
+    .catch(err=>{
+        console.log(err);
+    })
+}
+function deletedata(id){
+    console.log("Delete",id);
+    //displayExpense(id);
+    axios.delete(`http://localhost:7000/delete/${id}`)
+
+    
+
+
+    .then(res=>{
+        console.log(res);
+        fetchdata();
+    })
+    .catch(err=>{
+        console.log(err);
+
+    })
+
+    }
+
+
+document.addEventListener('DOMContentLoaded',()=>{
+    fetchdata();
+})
+
+
+
+</script>
