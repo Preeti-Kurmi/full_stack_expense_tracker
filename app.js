@@ -1,23 +1,25 @@
-const sequelize = require('./models/modal');
 const express = require('express');
 const app = express();
-//const router=express.Router();
-const bodyparser = require('body-parser');
-const control=require('./Controller');
-app.use(bodyparser.json());
-app.use(bodyparser.urlencoded({ extended: true }));
+const sequelize = require('./models/modal');
 const cors = require('cors');
 
-
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
-app.post('/add-expense', control.postexpense);
-app.get('/expenses', control.getexpense);
+const routes = require('./routes/routes');
 
-app.delete('/delete/:id', control.dltexpense);
-app.put('/update/:id',control.updateexpense);
+app.use('/', routes);
+
+const PORT = 7000;
+
+sequelize
+  .sync()
+  .then(() => app.listen(PORT, () => console.log(`Server is running on port ${PORT}`)))
+  .catch((err) => {
+    console.error(err);
+  });
 
 
-app.listen(7000, () => {
-  console.log("success");
-});
+
+
